@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Demo_Dealers</string>
+    <string name="yelp_consumer_key">qDLX-y33HXhcxsKJdJeBjQ</string>
+    <string name="yelp_consumer_secret">yKckQF64GdHNTGYJjTZsalQteY4jxMOBEIU2ph4qiQwoRoObez0gjOPQiSwPHUc2</string>
+    <string name="yelp_token">-M249BiQw1Kv4sx_vX57-OkEPlLzHB3P</string>
+    <string name="yelp_token_secret">cF6br-SYhheURpncWslfJinMr7I</string>
+    <string name="MAP_KEY">AIzaSyB_4VKveaaK7zy9pZeW3ysxlKkcHoU34Ks</string>
+</resources>
