@@ -47,6 +47,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
     private EditText editText;
     private static final String TAG = MapsActivity.class.getSimpleName();
     private MapView map;
+    private SpeechRecognizerWrapper speechRecognizer;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -74,7 +75,8 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
-
+        speechRecognizer = new SpeechRecognizerWrapper();
+        speechRecognizer.initializeSpeechService(this, this);
         yelp = Yelp.get(getApplicationContext());
         editText = (EditText) findViewById(R.id.search_text_maps);
         editText.setText("");
@@ -227,18 +229,35 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
     }
 
+
+
     @Override
     public void setText(ArrayList<String> matches) {
-
+        StringBuilder listString = new StringBuilder();
+        for (String s : matches) {
+            listString.append(s + " ");
+        }
+        editText.append(listString.toString());
     }
 
     @Override
     public void endOfSpeech() {
-
+        speechRecognizer.endOfSpeech();
     }
 
     @Override
     public void restart() {
+        speechRecognizer.endOfSpeech();
+        speechRecognizer.startOfSpeech(this);
+    }
 
+    public void startVoice(View view) {
+        speechRecognizer.startOfSpeech(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        speechRecognizer.stopListeningSpeechService();
     }
 }

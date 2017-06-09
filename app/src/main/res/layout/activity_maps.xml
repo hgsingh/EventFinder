@@ -29,9 +29,10 @@
 
         <Button
             android:id="@+id/voicewrapper"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:onClick="startVoice" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="startVoice"
+            android:text="Voice Search" />
     </LinearLayout>
 
     <org.osmdroid.views.MapView
