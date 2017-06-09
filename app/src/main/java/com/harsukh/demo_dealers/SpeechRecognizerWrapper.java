@@ -27,6 +27,8 @@ public class SpeechRecognizerWrapper {
         }
         if (mSpeechRecognizerIntent == null) {
             mSpeechRecognizerIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+//            mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1); // number of maximum results..
+          //  mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Say something");
             mSpeechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH);
 
         }

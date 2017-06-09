@@ -239,10 +239,15 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
     @Override
     public void setText(Iterator<String> matches) {
         StringBuilder listString = new StringBuilder();
+        int i = 0;
         while (matches.hasNext()) {
-            listString.append(matches.next() + " ");
+            String current = matches.next();
+            listString.append(current + " ");
+            if (i == 1) {
+                editText.append(current);
+            }
+            ++i;
         }
-        editText.append(listString.toString());
     }
 
     @Override

@@ -68,6 +68,7 @@ public class VoiceRecognition implements RecognitionListener {
     @Override
     public void onResults(Bundle bundle) {
         ArrayList<String> matches = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+        Log.i(TAG, matches.toString());
         HashSet<String> hashSet = new HashSet<>(matches);
         if (speechObservers.size() > 0) {
             for (ISpeechObserver speechObserver : speechObservers) {
