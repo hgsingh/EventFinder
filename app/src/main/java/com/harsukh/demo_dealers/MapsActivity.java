@@ -34,9 +34,10 @@ import org.osmdroid.views.overlay.OverlayItem;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 
 /**
  * Created by harsukh on 6/8/17.
@@ -76,7 +77,6 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         map.setTileSource(TileSourceFactory.MAPNIK);
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
-        speechRecognizer = new SpeechRecognizerWrapper();
         yelp = Yelp.get(getApplicationContext());
         editText = (EditText) findViewById(R.id.search_text_maps);
         editText.setText("");
@@ -87,6 +87,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
     @Override
     protected void onStart() {
         super.onStart();
+        speechRecognizer = new SpeechRecognizerWrapper();
         speechRecognizer.initializeSpeechService(this, this);
     }
 
@@ -117,22 +118,22 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
     }
 
     public void geoLocate(View v) {
-        String search_term = editText.getText().toString();
-        if (!TextUtils.isEmpty(search_term)) {
-            yelp.search(search_term, current_location.getLatitude(), current_location.getLongitude()).
-                    subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Subscriber<Search>() {
+        final String search_term = editText.getText().toString();
+        if (!TextUtils.isEmpty(search_term) && current_location != null) {
+            yelp.initiateAuth(new Yelp.OnAuthComplete() {
                 @Override
-                public void onCompleted() {
-                }
+                public void startFunction() {
+                    yelp.search(search_term, current_location.getLatitude(), current_location.getLongitude()).enqueue(new Callback<Search>() {
+                        @Override
+                        public void onResponse(Call<Search> call, Response<Search> response) {
+                            setMarkers(response.body());
+                        }
 
-                @Override
-                public void onError(Throwable e) {
-                    Log.e(TAG, "Error when calling", e);
-                }
-
-                @Override
-                public void onNext(Search search) {
-                    setMarkers(search);
+                        @Override
+                        public void onFailure(Call<Search> call, Throwable t) {
+                            Log.e(TAG, "unable to initiate search", t);
+                        }
+                    });
                 }
             });
         }
@@ -140,7 +141,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
 
     private void setMarkers(Search search) {
         //your items
-        ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
+        ArrayList<OverlayItem> items = new ArrayList<>();
 
         for (Business business : search.businesses) {
             items.add(new OverlayItem(business.name, business.phone, new GeoPoint(business.coordinates.latitude, business.coordinates.longitude))); // Lat/Lon decimal degrees
