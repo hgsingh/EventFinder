@@ -12,14 +12,14 @@ android {
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
-    signingConfigs {
-        debug {
-            keyAlias 'demo'
-            keyPassword 'android'
-            storeFile file('/Users/harsukh/keystore/demo.keystore')
-            storePassword 'android'
-        }
-    }
+//    signingConfigs {
+//        debug {
+//            keyAlias 'demo'
+//            keyPassword 'android'
+//            storeFile file('/Users/harsukh/keystore/demo.keystore')
+//            storePassword 'android'
+//        }
+//    }
 
     buildTypes {
         release {

@@ -27,6 +27,9 @@ import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.ItemizedIconOverlay;
+import org.osmdroid.views.overlay.ItemizedOverlay;
+import org.osmdroid.views.overlay.OverlayItem;
 
 import java.util.ArrayList;
 
@@ -76,6 +79,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         editText = (EditText) findViewById(R.id.search_text_maps);
         editText.setText("");
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000l, 10.0f, this);
+        setMarkers(null);
     }
 
     @Override
@@ -127,8 +131,30 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
     }
 
     private void setMarkers(Search search) {
-        //Uri uri = constructUri(search);
-        //Picasso.with(this).load(uri).into((ImageView) findViewById(R.id.MapView));
+        //your items
+        ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
+
+        for(Business business : search.businesses) {
+            items.add(new OverlayItem(business.name, business.phone, new GeoPoint(business.coordinates.latitude, business.coordinates.longitude))); // Lat/Lon decimal degrees
+        }
+
+        items.add(new OverlayItem("RenCen", "GM Renaissance Center, Detroit", new GeoPoint(42.329, -83.0399))); // Lat/Lon decimal degrees
+
+        ItemizedOverlay<OverlayItem> markers = new ItemizedIconOverlay<OverlayItem>(items,
+                getDrawable(R.drawable.marker),
+                new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
+                    @Override
+                    public boolean onItemSingleTapUp(int index, OverlayItem item) {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onItemLongPress(int index, OverlayItem item) {
+                        return false;
+                    }
+                },  this);
+
+        map.getOverlays().add(markers);
     }
 
     private Uri constructUri(Search search) {
