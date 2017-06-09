@@ -60,6 +60,9 @@ public class Yelp {
 
                 }
             });
+        } else {
+            onAuthComplete.startFunction();
+
         }
     }
 
