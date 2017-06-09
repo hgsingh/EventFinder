@@ -7,7 +7,9 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -15,12 +17,16 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageView;
 
 import com.harsukh.yelpapi.Business;
 import com.harsukh.yelpapi.Search;
 import com.harsukh.yelpapi.Yelp;
-import com.squareup.picasso.Picasso;
+
+import org.osmdroid.api.IMapController;
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
 
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
@@ -35,13 +41,17 @@ public class MapsActivity extends AppCompatActivity implements LocationListener 
     private Yelp yelp = null;
     private EditText editText;
     private static final String TAG = MapsActivity.class.getSimpleName();
+    private MapView map;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -51,8 +61,16 @@ public class MapsActivity extends AppCompatActivity implements LocationListener 
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        yelp = Yelp.get(getApplicationContext());
+
+        Context ctx = getApplicationContext();
         setContentView(R.layout.activity_maps);
+        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
+        map = (MapView) findViewById(R.id.MapView);
+        map.setTileSource(TileSourceFactory.MAPNIK);
+        map.setBuiltInZoomControls(true);
+        map.setMultiTouchControls(true);
+
+        yelp = Yelp.get(getApplicationContext());
         editText = (EditText) findViewById(R.id.search_text_maps);
         editText.setText("");
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000l, 10.0f, this);
@@ -60,8 +78,13 @@ public class MapsActivity extends AppCompatActivity implements LocationListener 
 
     @Override
     public void onLocationChanged(Location location) {
+        Log.i(TAG, "Initialized location updated");
         current_location = location;
-        Picasso.with(this).load(constructInitialUri()).into((ImageView) findViewById(R.id.MapView));
+        IMapController mapController = map.getController();
+        mapController.setZoom(19);
+        GeoPoint startPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+        mapController.setCenter(startPoint);
+        //Picasso.with(this).load(constructInitialUri()).into((ImageView) findViewById(R.id.MapView));
     }
 
     @Override
@@ -102,15 +125,15 @@ public class MapsActivity extends AppCompatActivity implements LocationListener 
     }
 
     private void setMarkers(Search search) {
-        Uri uri = constructUri(search);
-        Picasso.with(this).load(uri).into((ImageView) findViewById(R.id.MapView));
+        //Uri uri = constructUri(search);
+        //Picasso.with(this).load(uri).into((ImageView) findViewById(R.id.MapView));
     }
 
     private Uri constructUri(Search search) {
         Uri.Builder builder = new Uri.Builder().scheme("https").authority("maps.googleapis.com")
                 .appendPath("maps").appendPath("api").appendPath("staticmap").
-                appendQueryParameter("center", "" + current_location.getLatitude() + "," +
-                        current_location.getLongitude()).appendQueryParameter("zoom", "10")
+                        appendQueryParameter("center", "" + current_location.getLatitude() + "," +
+                                current_location.getLongitude()).appendQueryParameter("zoom", "10")
                 .appendQueryParameter("size", "300x100").appendQueryParameter("scale", "2");
         StringBuilder locations = new StringBuilder();
         for (Business business : search.businesses) {
@@ -126,15 +149,53 @@ public class MapsActivity extends AppCompatActivity implements LocationListener 
         return uri;
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
+    }
+
     private Uri constructInitialUri() {
         Uri uri = new Uri.Builder().scheme("https").authority("maps.googleapis.com")
                 .appendPath("maps").appendPath("api").appendPath("staticmap").
-                appendQueryParameter("center", "" + current_location.getLatitude() + "," +
-                        current_location.getLongitude()).appendQueryParameter("zoom", "10")
+                        appendQueryParameter("center", "" + current_location.getLatitude() + "," +
+                                current_location.getLongitude()).appendQueryParameter("zoom", "10")
                 .appendQueryParameter("size", "300x100").appendQueryParameter("scale", "2").
                         appendQueryParameter("key", getString(R.string.MAP_KEY)).build();
         Log.i(TAG, uri.toString());
         return uri;
     }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        goImmersiveMode(2);
+    }
+
+    protected void goImmersiveMode(int ch) {
+
+        // The UI options currently enabled are represented by a bitfield.
+        // getSystemUiVisibility() gives us that bitfield.
+        int newUiOptions = getWindow().getDecorView().getSystemUiVisibility();
+
+        // Navigation bar hiding: Backwards compatible to ICS.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+            newUiOptions |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        }
+
+        // Status bar hiding: Backwards compatible to Jellybean
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            newUiOptions |= View.SYSTEM_UI_FLAG_FULLSCREEN;
+        }
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && ch == 1) {
+            newUiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && ch == 2) {
+            newUiOptions |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        }
+
+        getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
+    }
 }

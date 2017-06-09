@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".MapsActivity">
 
     <LinearLayout
         android:id="@+id/search_layout_maps"
@@ -28,8 +28,9 @@
             android:text="Go Search!" />
     </LinearLayout>
 
-    <ImageView
+    <org.osmdroid.views.MapView
         android:id="@+id/MapView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+    </org.osmdroid.views.MapView>
 </LinearLayout>
