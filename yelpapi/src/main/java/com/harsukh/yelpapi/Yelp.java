@@ -17,6 +17,7 @@ public class Yelp {
     private static String CLIENT_CREDENTIALS = "CLIENT_PREFERENCES";
     private static final String AUTH_KEY = "AUTH_KEY";
     private static final String EXPIRY_KEY = "EXPIRY";
+    private static final String TOKEN_TYPE = "TYPE";
     private Context context;
     private static IYelp yelpService;
 
@@ -47,8 +48,9 @@ public class Yelp {
                 @Override
                 public void onResponse(Call<Authorization> call, Response<Authorization> response) {
                     Authorization authorization = response.body();
-                    Log.i("Yelp", authorization.access_token.toString());
+                    Log.i("Yelp", authorization.access_token);
                     editor.putString(AUTH_KEY, authorization.access_token);
+                    editor.putString(TOKEN_TYPE, authorization.token_type);
                     editor.putLong(EXPIRY_KEY, authorization.expires_in * 1000 + System.currentTimeMillis());
                     editor.apply();
                     onAuthComplete.startFunction();
@@ -57,7 +59,6 @@ public class Yelp {
                 @Override
                 public void onFailure(Call<Authorization> call, Throwable t) {
                     Log.e("Yelp", "Unable to authorize", t);
-
                 }
             });
         } else {
@@ -77,7 +78,8 @@ public class Yelp {
     public Call<Search> search(final String term, final double latitude, final double longitude) {
         final SharedPreferences sharedPreferences = context.getSharedPreferences(CLIENT_CREDENTIALS, Context.MODE_PRIVATE);
         final String authToken = sharedPreferences.getString(AUTH_KEY, null);
-        return yelpService.getSearchResults(authToken, term, latitude, longitude);
+        final String authType = sharedPreferences.getString(TOKEN_TYPE, null);
+        return yelpService.getSearchResults(authType + " " + authToken, term, latitude, longitude);
     }
 
     /**
@@ -89,7 +91,8 @@ public class Yelp {
     public Observable<Search> search(final String term, final String location) {
         final SharedPreferences sharedPreferences = context.getSharedPreferences(CLIENT_CREDENTIALS, Context.MODE_PRIVATE);
         final String authToken = sharedPreferences.getString(AUTH_KEY, null);
-        return yelpService.getSearchResults(authToken, term, location);
+        final String authType = sharedPreferences.getString(TOKEN_TYPE, null);
+        return yelpService.getSearchResults(authType + " " + authToken, term, location);
     }
 
     public interface OnAuthComplete {
