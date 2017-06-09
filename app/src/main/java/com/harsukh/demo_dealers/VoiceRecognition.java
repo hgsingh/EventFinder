@@ -6,6 +6,8 @@ import android.speech.SpeechRecognizer;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 /**
@@ -66,12 +68,10 @@ public class VoiceRecognition implements RecognitionListener {
     @Override
     public void onResults(Bundle bundle) {
         ArrayList<String> matches = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-        for (String command : matches) {
-            System.out.println(command);
-        }
-        if (matches != null && speechObservers.size() > 0) {
+        HashSet<String> hashSet = new HashSet<>(matches);
+        if (speechObservers.size() > 0) {
             for (ISpeechObserver speechObserver : speechObservers) {
-                speechObserver.setText(matches);
+                speechObserver.setText(hashSet.iterator());
             }
         }
     }

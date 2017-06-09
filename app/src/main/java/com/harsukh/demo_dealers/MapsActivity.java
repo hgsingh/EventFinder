@@ -32,6 +32,7 @@ import org.osmdroid.views.overlay.ItemizedOverlay;
 import org.osmdroid.views.overlay.OverlayItem;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
@@ -76,12 +77,17 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         map.setBuiltInZoomControls(true);
         map.setMultiTouchControls(true);
         speechRecognizer = new SpeechRecognizerWrapper();
-        speechRecognizer.initializeSpeechService(this, this);
         yelp = Yelp.get(getApplicationContext());
         editText = (EditText) findViewById(R.id.search_text_maps);
         editText.setText("");
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000l, 10.0f, this);
-        setMarkers(null);
+        //setMarkers(null);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        speechRecognizer.initializeSpeechService(this, this);
     }
 
     @Override
@@ -136,7 +142,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         //your items
         ArrayList<OverlayItem> items = new ArrayList<OverlayItem>();
 
-        for(Business business : search.businesses) {
+        for (Business business : search.businesses) {
             items.add(new OverlayItem(business.name, business.phone, new GeoPoint(business.coordinates.latitude, business.coordinates.longitude))); // Lat/Lon decimal degrees
         }
 
@@ -154,7 +160,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
                     public boolean onItemLongPress(int index, OverlayItem item) {
                         return false;
                     }
-                },  this);
+                }, this);
 
         map.getOverlays().add(markers);
     }
@@ -230,12 +236,11 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
     }
 
 
-
     @Override
-    public void setText(ArrayList<String> matches) {
+    public void setText(Iterator<String> matches) {
         StringBuilder listString = new StringBuilder();
-        for (String s : matches) {
-            listString.append(s + " ");
+        while (matches.hasNext()) {
+            listString.append(matches.next() + " ");
         }
         editText.append(listString.toString());
     }
