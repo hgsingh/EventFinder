@@ -28,6 +28,8 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 
+import java.util.ArrayList;
+
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -36,7 +38,7 @@ import rx.schedulers.Schedulers;
  * Created by harsukh on 6/8/17.
  */
 
-public class MapsActivity extends AppCompatActivity implements LocationListener {
+public class MapsActivity extends AppCompatActivity implements LocationListener, ISpeechObserver {
     private static Location current_location = null;
     private Yelp yelp = null;
     private EditText editText;
@@ -197,5 +199,20 @@ public class MapsActivity extends AppCompatActivity implements LocationListener 
         }
 
         getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
+    }
+
+    @Override
+    public void setText(ArrayList<String> matches) {
+
+    }
+
+    @Override
+    public void endOfSpeech() {
+
+    }
+
+    @Override
+    public void restart() {
+
     }
 }
