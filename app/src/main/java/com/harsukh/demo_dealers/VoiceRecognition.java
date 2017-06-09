@@ -6,7 +6,6 @@ import android.speech.SpeechRecognizer;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -58,6 +57,7 @@ public class VoiceRecognition implements RecognitionListener {
 
     @Override
     public void onError(int i) {
+        Log.i(TAG, "Error occured " + i);
         if (speechObservers.size() > 0) {
             for (ISpeechObserver speechObserver : speechObservers) {
                 speechObserver.restart();

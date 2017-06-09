@@ -31,7 +31,6 @@ public class SpeechRecognizerWrapper {
 
         }
         voiceRecognition.addObserver(speechObserver);
-        startOfSpeech(context);
     }
 
     // stops the service
