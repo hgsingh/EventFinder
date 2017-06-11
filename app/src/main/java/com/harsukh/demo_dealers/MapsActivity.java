@@ -1,8 +1,10 @@
 package com.harsukh.demo_dealers;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -16,7 +18,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.harsukh.yelpapi.Business;
 import com.harsukh.yelpapi.Search;
@@ -54,6 +59,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -81,7 +87,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
         editText = (EditText) findViewById(R.id.search_text_maps);
         editText.setText("");
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000l, 10.0f, this);
-        //setMarkers(null);
+//        setMarkers(null);
     }
 
     @Override
@@ -142,7 +148,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
     private void setMarkers(Search search) {
         //your items
         ArrayList<OverlayItem> items = new ArrayList<>();
-
+        if (search != null)
         for (Business business : search.businesses) {
             items.add(new OverlayItem(business.name, business.phone, new GeoPoint(business.coordinates.latitude, business.coordinates.longitude))); // Lat/Lon decimal degrees
         }
@@ -154,6 +160,7 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
                 new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
                     @Override
                     public boolean onItemSingleTapUp(int index, OverlayItem item) {
+                        startDialog(item);
                         return true;
                     }
 
@@ -164,6 +171,30 @@ public class MapsActivity extends AppCompatActivity implements LocationListener,
                 }, this);
 
         map.getOverlays().add(markers);
+    }
+
+    private void startDialog(OverlayItem item) {
+        Dialog dialog = new Dialog(this);
+        dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        dialog.setContentView(R.layout.custom_dialog);
+        dialog.setCancelable(true);
+        TextView map_popup_header = (TextView) dialog.findViewById(R.id.map_popup_header);
+        map_popup_header.setText(item.getTitle());
+
+        TextView map_popup_body = (TextView) dialog.findViewById(R.id.map_popup_body);
+        map_popup_body.setText(item.getSnippet());
+
+        //set up button
+        ImageView imgMoreInfo = (ImageView) dialog.findViewById(R.id.map_more_info_imageView);
+        imgMoreInfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("Clicked", "more info");
+            }
+        });
+        //now that the dialog is set up, it's time to show it
+        dialog.show();
     }
 
     private Uri constructUri(Search search) {
